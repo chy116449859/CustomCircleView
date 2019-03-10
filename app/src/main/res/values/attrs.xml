@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CircleTextView">
+        <attr name="mText" format="string"/>
+        <attr name="mTextColor" format="color"/>
+        <attr name="mTextSize" format="dimension"/>
+        <attr name="radius" format="dimension"/>
+    </declare-styleable>
+
+</resources>
