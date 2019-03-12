@@ -1,12 +1,12 @@
 package com.bb.cy;
 
-import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-
 import com.bb.cy.view.CircleBean;
 import com.bb.cy.view.CircleSegmentBean;
 import com.bb.cy.view.CircleView;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,19 +34,23 @@ public class MainActivity extends AppCompatActivity {
         List<CircleSegmentBean> list = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             CircleSegmentBean bean = new CircleSegmentBean();
-            bean.descText = "BELOW AVERAGE";
             bean.descTextColor = Color.rgb(0x66, 0x66, 0x66);
             bean.descTextSize = 14;
             bean.descTextMarginSegment = 12;
             if (i == 0) {
+                bean.descText = "BELOW AVERAGE";
                 bean.color = Color.rgb(0xf8, 0x60, 0x30);
             } else if (i == 1) {
+                bean.descText = "FAIR";
                 bean.color = Color.rgb(0xf4, 0xa4, 0x60);
             } else if (i == 2) {
+                bean.descText = "GOOD";
                 bean.color = Color.rgb(0xff, 0xff, 0x00);
             } else if (i == 3) {
+                bean.descText = "VERY GOOD";
                 bean.color = Color.rgb(0x00, 0x00, 0xff);
             } else if (i == 4) {
+                bean.descText = "EXCELLENT";
                 bean.color = Color.rgb(0x00, 0xfa, 0x9a);
             }
 
@@ -62,13 +66,15 @@ public class MainActivity extends AppCompatActivity {
         circleBean.innerCircleWidth = 18;
         circleBean.innerCircleColor = Color.rgb(0xef, 0xef, 0xef);
 
+        circleBean.creditLevel = 1;
+
         circleBean.levelText = "B";
         circleBean.levelTextColor = Color.rgb(0x33, 0x33, 0x33);
-        circleBean.levelTextSize = 56;
+        circleBean.levelTextSize = 86;
 
         circleBean.levelDescText = "Low Risk";
         circleBean.levelDescTextColor = Color.rgb(0x33, 0x33, 0x33);
-        circleBean.levelDescTextSize = 32;
+        circleBean.levelDescTextSize = 36;
         return circleBean;
     }
 

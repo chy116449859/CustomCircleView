@@ -54,6 +54,11 @@ public class CircleBean {
     /**
      * 信用等级
      */
+    public byte creditLevel;
+
+    /**
+     * 信用等级文案
+     */
     public String levelText;
 
     public int levelTextSize;
@@ -61,7 +66,7 @@ public class CircleBean {
     public int levelTextColor;
 
     /**
-     * 等级描述
+     * 等级描述文案
      */
     public String levelDescText;
 
@@ -70,7 +75,7 @@ public class CircleBean {
     public int levelDescTextColor;
 
     /**
-     * 评测时间
+     * 评测时间文案
      */
     public String evaluateTimeText;
 
