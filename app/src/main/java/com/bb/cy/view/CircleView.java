@@ -37,6 +37,8 @@ public class CircleView extends View {
 
     Bitmap mBitmap;
 
+    Path mPath;
+
     public CircleView(Context context) {
         super(context);
         init();
@@ -63,6 +65,7 @@ public class CircleView extends View {
     private void init() {
         mRectF = new RectF();
         mPaint = new Paint();
+        mPath = new Path();
         mBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.ico_pointer);
     }
 
@@ -207,26 +210,79 @@ public class CircleView extends View {
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeWidth(0f);
             if (!TextUtils.isEmpty(bean.descText)) {
-                Path path = new Path();
                 //设置路径，以圆作为我们文本显示的路线；路径的绘制方式 CW 表示正序绘制，CCW表示倒序绘制
-                path.addCircle((float) getWidth() / 2, (float) getWidth() / 2, outerCircleDescRadius,
+                mPath.addCircle((float) getWidth() / 2, (float) getWidth() / 2, outerCircleDescRadius,
                         Path.Direction.CW);
-                canvas.drawTextOnPath(bean.descText, path,
+                canvas.drawTextOnPath(bean.descText, mPath,
                         getHOffset(bean.descText, outerCircleDescRadius, bean.angle, bean.spaceAngle, i), 0, mPaint);
             }
 
-            /******************绘制小图标******************/
+            /******************绘制小水滴图标******************/
             if (mCircleBean.creditLevel == i) {
-//                mBitmap = tintBitmap(mBitmap, bean.color);
+                //图片偏移的角度
                 float offsetAngle = getBitmapOffsetAngle(bean.angle, bean.spaceAngle, i);
-                float[] offset = getBitmapOffset(mCircleBean.innerCircleRadius + mCircleBean.innerCircleWidth / 2,
+                float[] offset = getBitmapOffset(
+                        mCircleBean.innerCircleRadius + (float) mCircleBean.innerCircleWidth / 2,
                         offsetAngle);
-                Matrix matrix = new Matrix();
-                matrix.postTranslate(-(float) mBitmap.getWidth() / 2, -(float) mBitmap.getHeight() / 2);//步骤1
-                matrix.postRotate(offsetAngle + 270);//
-                matrix.postTranslate(offset[0], offset[1]);//步骤3  
-                canvas.drawBitmap(mBitmap, matrix, null);//步骤4
-                matrix.reset();
+                float dripRadius = (float) mCircleBean.innerCircleWidth * 0.75f;
+                //设置画笔颜色和样式
+                mPaint.setColor(bean.color);
+                mPaint.setStyle(Paint.Style.FILL);
+
+                //水滴圆心坐标
+                float dripCenterX = offset[0];
+                float dripCenterY = offset[1];
+                if (offsetAngle > 90) {
+                    dripCenterX = offset[0];
+                    dripCenterY = offset[1];
+                }
+
+                //绘制水滴外圆
+                canvas.drawCircle(dripCenterX, dripCenterY, dripRadius, mPaint);
+
+                float dripAngle4Cal = (180 - mCircleBean.dripAngle) / 2;
+                //最远定点离圆心的距离
+                float triangle2CircleCenter = (float) (dripRadius / Math
+                        .cos(Math.toRadians(dripAngle4Cal)));
+
+                //水滴小三角顶点坐标
+                Path path = new Path();
+                float mTriangleX1 = (float) (dripCenterX - triangle2CircleCenter * Math
+                        .cos(Math.toRadians(offsetAngle)));
+                float mTriangleY1 = (float) (dripCenterY - triangle2CircleCenter * Math
+                        .sin(Math.toRadians(offsetAngle)));
+                float mTriangleX2 = (float) (dripCenterX - dripRadius * Math
+                        .cos(Math.toRadians(dripAngle4Cal - offsetAngle)));
+                float mTriangleY2 = (float) (dripCenterY + dripRadius * Math
+                        .sin(Math.toRadians(dripAngle4Cal - offsetAngle)));
+                float mTriangleX3 = (float) (dripCenterX - dripRadius * Math
+                        .cos(Math.toRadians(dripAngle4Cal + offsetAngle)));
+                float mTriangleY3 = (float) (dripCenterY - dripRadius * Math
+                        .sin(Math.toRadians(dripAngle4Cal + offsetAngle)));
+                //绘制顶部三角形
+                path.moveTo(mTriangleX1, mTriangleY1);
+                path.lineTo(mTriangleX2, mTriangleY2);
+                path.lineTo(mTriangleX3, mTriangleY3);
+                //lineto起点
+                path.close();
+                canvas.drawPath(path, mPaint);
+
+                //绘制水滴白色小内圆ff
+                mPaint.setColor(Color.rgb(0xff, 0xff, 0xff));
+                canvas.drawCircle(dripCenterX, dripCenterY, dripRadius - mCircleBean.innerCircleWidth * 0.36f,
+                        mPaint);
+
+            } else {
+//                mBitmap = tintBitmap(mBitmap, bean.color);
+//                float offsetAngle = getBitmapOffsetAngle(bean.angle, bean.spaceAngle, i);
+//                float[] offset = getBitmapOffset(mCircleBean.innerCircleRadius + mCircleBean.innerCircleWidth / 2,
+//                        offsetAngle);
+//                Matrix matrix = new Matrix();
+//                matrix.postTranslate(-(float) mBitmap.getWidth() / 2, -(float) mBitmap.getHeight() / 2);//步骤1
+//                matrix.postRotate(offsetAngle + 270);//
+//                matrix.postTranslate(offset[0], offset[1]);//步骤3  
+//                canvas.drawBitmap(mBitmap, matrix, null);//步骤4
+//                matrix.reset();
             }
         }
     }
@@ -374,7 +430,7 @@ public class CircleView extends View {
      * 获取圆环周长
      */
     private float getPerimeter(float radius) {
-        return (float) (2 * 3.14 * radius);
+        return (float) (2 * Math.PI * radius);
     }
 
     /**

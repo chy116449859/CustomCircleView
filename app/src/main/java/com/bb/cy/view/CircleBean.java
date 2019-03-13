@@ -12,7 +12,7 @@ public class CircleBean {
     public List<CircleSegmentBean> mCircleSegmentBeanList;
 
     /**
-     * 圆环水滴的角度
+     * 圆环水滴的外顶点角度
      */
     public float dripAngle;
 
@@ -20,6 +20,7 @@ public class CircleBean {
      * 圆环水滴的颜色
      */
     public int dripColor;
+
 
     /**
      * 内环半径，一般不设置，可通过计算获取

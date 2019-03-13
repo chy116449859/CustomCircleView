@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private CircleBean initCircleBean() {
         CircleBean circleBean = new CircleBean();
 
+        circleBean.dripAngle = 70;
+
         circleBean.evaluateTimeTextMarginTop = 16;
         circleBean.evaluateTimeText = "Evaluation time:" + getCurrentDate(System.currentTimeMillis());
         circleBean.evaluateTimeTextColor = Color.rgb(0x99, 0x99, 0x99);
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         circleBean.mCircleSegmentBeanList = list;
 
         circleBean.outerCircleWidth = 36;
-        circleBean.outCircleMarginInnerCircle = 24;
+        circleBean.outCircleMarginInnerCircle = 28;
 
         circleBean.innerCircleWidth = 18;
         circleBean.innerCircleColor = Color.rgb(0xef, 0xef, 0xef);

@@ -14,12 +14,4 @@
         android:layout_width="320dp"
         android:layout_height="320dp"/>
 
-    <ImageView
-        android:tint="#ee3afe"
-        android:tintMode="add"
-        android:layout_marginTop="30dp"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@drawable/ico_pointer"/>
-
 </LinearLayout>
