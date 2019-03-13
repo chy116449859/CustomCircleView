@@ -218,7 +218,7 @@ public class CircleView extends View {
             }
 
             /******************绘制小水滴图标******************/
-            if (mCircleBean.creditLevel == i) {
+            if (true) {
                 //图片偏移的角度
                 float offsetAngle = getBitmapOffsetAngle(bean.angle, bean.spaceAngle, i);
                 float[] offset = getBitmapOffset(
@@ -232,10 +232,6 @@ public class CircleView extends View {
                 //水滴圆心坐标
                 float dripCenterX = offset[0];
                 float dripCenterY = offset[1];
-                if (offsetAngle > 90) {
-                    dripCenterX = offset[0];
-                    dripCenterY = offset[1];
-                }
 
                 //绘制水滴外圆
                 canvas.drawCircle(dripCenterX, dripCenterY, dripRadius, mPaint);
