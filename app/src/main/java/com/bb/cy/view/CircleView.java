@@ -7,13 +7,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -92,14 +90,12 @@ public class CircleView extends View {
             mFirstCircleSegmentBean = mCircleBean.mCircleSegmentBeanList.get(0);
             //获取圆环段描述文字的高度
             mPaint.setTextSize(mFirstCircleSegmentBean.descTextSize);
-            Rect rect = new Rect();
-            mPaint.getTextBounds(mFirstCircleSegmentBean.descText, 0, mFirstCircleSegmentBean.descText.length(), rect);
-            mSegmentDescTextHeight = rect.height();
+            mPaint.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "font/Roboto-Medium.ttf"));
+            mSegmentDescTextHeight = getTextHeight(mFirstCircleSegmentBean.descText);
 
             //获取测量时间文字的高度
             mPaint.setTextSize(mCircleBean.evaluateTimeTextSize);
-            mPaint.getTextBounds(mCircleBean.evaluateTimeText, 0, mCircleBean.evaluateTimeText.length(), rect);
-            int evaluateTimeTextHeight = rect.height();
+            int evaluateTimeTextHeight = getTextHeight(mCircleBean.evaluateTimeText);
 
             if (mCircleBean.outerCircleRadius > 0 && mCircleBean.innerCircleRadius > 0) {
                 int width = 2 * (mCircleBean.outerCircleRadius + mCircleBean.outerCircleWidth
@@ -151,6 +147,9 @@ public class CircleView extends View {
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setColor(mCircleBean.innerCircleColor);
         mPaint.setStrokeWidth(mCircleBean.innerCircleWidth);
+//        Shader shader = new Shader();
+//        mPaint.setShader(shader);
+//        mPaint.setShadowLayer(2, 2, 2, Color.RED);
         canvas.drawArc(rect, -180, 180, false, mPaint);
 
         //绘制中心的文字
@@ -158,16 +157,19 @@ public class CircleView extends View {
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(mCircleBean.levelDescTextColor);
         mPaint.setTextSize(mCircleBean.levelDescTextSize);
+        mPaint.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "font/din_bold.otf"));
         mPaint.setStrokeWidth(2f);
+        mPaint.setShadowLayer(0, 0, 0, 0);
         canvas.drawText(mCircleBean.levelDescText, (getWidth() - textWidthHeight[0]) / 2, getWidth() / 2, mPaint);
 
         float[] textWidthHeight1 = getTextWidthAndHeight(mCircleBean.levelText, mCircleBean.levelTextSize);
-        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(mCircleBean.levelTextColor);
         mPaint.setTextSize(mCircleBean.levelTextSize);
-        mPaint.setStrokeWidth(9f);
+        mPaint.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "font/din_bold.otf"));
+        mPaint.setStrokeWidth(1f);
         canvas.drawText(mCircleBean.levelText, (getWidth() - textWidthHeight1[0]) / 2,
-                getWidth() / 2 - textWidthHeight[1] - 21, mPaint);
+                getWidth() / 2 - textWidthHeight[1] - dp2px(getContext(), 7), mPaint);
 
         //绘制下面的文案
         float[] textWidthHeight2 = getTextWidthAndHeight(mCircleBean.evaluateTimeText,
@@ -175,6 +177,7 @@ public class CircleView extends View {
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(mCircleBean.evaluateTimeTextColor);
         mPaint.setTextSize(mCircleBean.evaluateTimeTextSize);
+        mPaint.setTypeface(Typeface.DEFAULT);
         mPaint.setStrokeWidth(3f);
         canvas.drawText(mCircleBean.evaluateTimeText, (getWidth() - textWidthHeight2[0]) / 2,
                 getWidth() / 2 + textWidthHeight[1] + mCircleBean.evaluateTimeTextMarginTop, mPaint);
@@ -192,7 +195,7 @@ public class CircleView extends View {
                 + mCircleBean.outerCircleWidth); // 右下角y
 
         //外圈文字半径
-        float outerCircleDescRadius = getWidth() / 2 - mSegmentDescTextHeight
+        float outerCircleDescRadius = getWidth() / 2 - mSegmentDescTextHeight / 2
                 - mFirstCircleSegmentBean.descTextMarginSegment;
 
         for (int i = 0, size = mCircleBean.mCircleSegmentBeanList.size(); i < size; i++) {
@@ -205,172 +208,93 @@ public class CircleView extends View {
             canvas.drawArc(mRectF, startAngle, bean.angle, false, mPaint);
 
             /*****************绘外圈文字*****************/
-            mPaint.setColor(bean.descTextColor);
-            mPaint.setTextSize(18);
-            mPaint.setStyle(Paint.Style.STROKE);
-            mPaint.setStrokeWidth(0f);
             if (!TextUtils.isEmpty(bean.descText)) {
                 //设置路径，以圆作为我们文本显示的路线；路径的绘制方式 CW 表示正序绘制，CCW表示倒序绘制
                 mPath.addCircle((float) getWidth() / 2, (float) getWidth() / 2, outerCircleDescRadius,
                         Path.Direction.CW);
-                canvas.drawTextOnPath(bean.descText, mPath,
-                        getHOffset(bean.descText, outerCircleDescRadius, bean.angle, bean.spaceAngle, i), 0, mPaint);
-            }
+                if (bean.descText.contains(":")) {
+                    String[] textArray = bean.descText.split(":");
+                    float lastTextWidth = 0;
+                    for (int j = 0, num = textArray.length; j < num; j++) {
+                        mPaint.setColor(bean.descTextColor);
+                        mPaint.setTextSize(bean.descTextSize);
+                        mPaint.setStyle(Paint.Style.FILL);
+                        mPaint.setTypeface(
+                                Typeface.createFromAsset(getContext().getAssets(), "font/Roboto-Medium.ttf"));
+                        mPaint.setStrokeWidth(0f);
+                        float padding = dp2px(getContext(), 7);
+                        float splitTextAngle = getSplitTextAngle(bean.descText, outerCircleDescRadius, ":", bean.angle,
+                                padding);
+                        if (j > 0) {
+                            lastTextWidth = lastTextWidth + getTextWidth(textArray[j - 1]);
+                        }
+                        float textAngle = getTextAngle(outerCircleDescRadius, bean.angle, bean.spaceAngle,
+                                splitTextAngle, i, j, padding + lastTextWidth);
+                        canvas.drawTextOnPath(textArray[j], mPath, getHOffset4Split(outerCircleDescRadius, textAngle),
+                                0, mPaint);
 
-            /******************绘制小水滴图标******************/
-            if (true) {
-                //图片偏移的角度
-                float offsetAngle = getBitmapOffsetAngle(bean.angle, bean.spaceAngle, i);
-                float[] offset = getBitmapOffset(
-                        mCircleBean.innerCircleRadius + (float) mCircleBean.innerCircleWidth / 2,
-                        offsetAngle);
-                float dripRadius = (float) mCircleBean.innerCircleWidth * 0.75f;
-                //设置画笔颜色和样式
-                mPaint.setColor(bean.color);
-                mPaint.setStyle(Paint.Style.FILL);
+                        /******************绘制小水滴图标******************/
+                        if (mCircleBean.levelText.equalsIgnoreCase(textArray[j])) {
+                            //图片偏移的角度
+                            float offsetAngle = textAngle
+                                    + getTextWidth(textArray[j]) / getPerimeter(outerCircleDescRadius) * 360 / 2;
+                            float[] offset = getBitmapOffset(
+                                    mCircleBean.innerCircleRadius + (float) mCircleBean.innerCircleWidth / 2,
+                                    offsetAngle);
+                            float dripRadius = dp2px(getContext(), 7);
+                            //设置画笔颜色和样式
+                            mPaint.setColor(bean.color);
+                            mPaint.setStyle(Paint.Style.FILL);
 
-                //水滴圆心坐标
-                float dripCenterX = offset[0];
-                float dripCenterY = offset[1];
+                            //水滴圆心坐标
+                            float dripCenterX = offset[0];
+                            float dripCenterY = offset[1];
 
-                //绘制水滴外圆
-                canvas.drawCircle(dripCenterX, dripCenterY, dripRadius, mPaint);
+                            //绘制水滴外圆
+                            canvas.drawCircle(dripCenterX, dripCenterY, dripRadius, mPaint);
 
-                float dripAngle4Cal = (180 - mCircleBean.dripAngle) / 2;
-                //最远定点离圆心的距离
-                float triangle2CircleCenter = (float) (dripRadius / Math
-                        .cos(Math.toRadians(dripAngle4Cal)));
+                            float dripAngle4Cal = (180 - mCircleBean.dripAngle) / 2;
+                            //最远定点离圆心的距离
+                            float triangle2CircleCenter = (float) (dripRadius / Math
+                                    .cos(Math.toRadians(dripAngle4Cal)));
 
-                //水滴小三角顶点坐标
-                Path path = new Path();
-                float mTriangleX1 = (float) (dripCenterX - triangle2CircleCenter * Math
-                        .cos(Math.toRadians(offsetAngle)));
-                float mTriangleY1 = (float) (dripCenterY - triangle2CircleCenter * Math
-                        .sin(Math.toRadians(offsetAngle)));
-                float mTriangleX2 = (float) (dripCenterX - dripRadius * Math
-                        .cos(Math.toRadians(dripAngle4Cal - offsetAngle)));
-                float mTriangleY2 = (float) (dripCenterY + dripRadius * Math
-                        .sin(Math.toRadians(dripAngle4Cal - offsetAngle)));
-                float mTriangleX3 = (float) (dripCenterX - dripRadius * Math
-                        .cos(Math.toRadians(dripAngle4Cal + offsetAngle)));
-                float mTriangleY3 = (float) (dripCenterY - dripRadius * Math
-                        .sin(Math.toRadians(dripAngle4Cal + offsetAngle)));
-                //绘制顶部三角形
-                path.moveTo(mTriangleX1, mTriangleY1);
-                path.lineTo(mTriangleX2, mTriangleY2);
-                path.lineTo(mTriangleX3, mTriangleY3);
-                //lineto起点
-                path.close();
-                canvas.drawPath(path, mPaint);
+                            //水滴小三角顶点坐标
+                            Path path = new Path();
+                            float mTriangleX1 = (float) (dripCenterX - triangle2CircleCenter * Math
+                                    .cos(Math.toRadians(offsetAngle)));
+                            float mTriangleY1 = (float) (dripCenterY - triangle2CircleCenter * Math
+                                    .sin(Math.toRadians(offsetAngle)));
+                            float mTriangleX2 = (float) (dripCenterX - dripRadius * Math
+                                    .cos(Math.toRadians(dripAngle4Cal - offsetAngle)));
+                            float mTriangleY2 = (float) (dripCenterY + dripRadius * Math
+                                    .sin(Math.toRadians(dripAngle4Cal - offsetAngle)));
+                            float mTriangleX3 = (float) (dripCenterX - dripRadius * Math
+                                    .cos(Math.toRadians(dripAngle4Cal + offsetAngle)));
+                            float mTriangleY3 = (float) (dripCenterY - dripRadius * Math
+                                    .sin(Math.toRadians(dripAngle4Cal + offsetAngle)));
+                            //绘制顶部三角形
+                            path.moveTo(mTriangleX1, mTriangleY1);
+                            path.lineTo(mTriangleX2, mTriangleY2);
+                            path.lineTo(mTriangleX3, mTriangleY3);
+                            //lineto起点
+                            path.close();
+                            canvas.drawPath(path, mPaint);
 
-                //绘制水滴白色小内圆ff
-                mPaint.setColor(Color.rgb(0xff, 0xff, 0xff));
-                canvas.drawCircle(dripCenterX, dripCenterY, dripRadius - mCircleBean.innerCircleWidth * 0.36f,
-                        mPaint);
+                            //绘制水滴白色小内圆ff
+                            mPaint.setColor(Color.rgb(0xff, 0xff, 0xff));
+                            canvas.drawCircle(dripCenterX, dripCenterY,
+                                    dripRadius / 2,
+                                    mPaint);
 
-            } else {
-//                mBitmap = tintBitmap(mBitmap, bean.color);
-//                float offsetAngle = getBitmapOffsetAngle(bean.angle, bean.spaceAngle, i);
-//                float[] offset = getBitmapOffset(mCircleBean.innerCircleRadius + mCircleBean.innerCircleWidth / 2,
-//                        offsetAngle);
-//                Matrix matrix = new Matrix();
-//                matrix.postTranslate(-(float) mBitmap.getWidth() / 2, -(float) mBitmap.getHeight() / 2);//步骤1
-//                matrix.postRotate(offsetAngle + 270);//
-//                matrix.postTranslate(offset[0], offset[1]);//步骤3  
-//                canvas.drawBitmap(mBitmap, matrix, null);//步骤4
-//                matrix.reset();
-            }
-        }
-    }
-
-    public static Bitmap tintBitmap(Bitmap inBitmap, int tintColor) {
-        if (inBitmap == null) {
-            return null;
-        }
-//        Bitmap outBitmap = Bitmap.createBitmap(inBitmap.getWidth(), inBitmap.getHeight(), inBitmap.getConfig());
-//        Canvas canvas = new Canvas(outBitmap);
-//        Paint paint = new Paint();
-//        paint.setAntiAlias(true);
-//        paint.setDither(true);// 图像过滤
-//        paint.setColorFilter(new PorterDuffColorFilter(tintColor, PorterDuff.Mode.MULTIPLY));
-//        canvas.drawBitmap(inBitmap, 0, 0, paint);
-//        return outBitmap;
-
-        Bitmap outBitmap = Bitmap.createBitmap(inBitmap.getWidth(), inBitmap.getHeight(), inBitmap.getConfig());
-        Canvas canvas = new Canvas(outBitmap);
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setDither(true);// 图像过滤
-        ColorMatrix matrix = new ColorMatrix();
-
-        matrix.setRotate(0, Color.green(tintColor)); //控制让红**在色轮上旋转hueColor葛角度
-        matrix.setRotate(1, Color.blue(tintColor)); //控制让绿红**在色轮上旋转hueColor葛角度
-        matrix.setRotate(2, Color.red(tintColor)); //控制让蓝**在色轮上旋转hueColor葛角度
-        paint.setColorFilter(new ColorMatrixColorFilter(matrix));
-        canvas.drawBitmap(inBitmap, 0, 0, paint);
-        return outBitmap;
-
-//        Bitmap outBitmap = Bitmap.createBitmap(inBitmap.getWidth(), inBitmap.getHeight(), inBitmap.getConfig());
-//        Canvas canvas = new Canvas(outBitmap);
-//        Paint paint = new Paint();
-//        paint.setAntiAlias(true);
-//        paint.setDither(true);// 图像过滤
-//        paint.setColorFilter(new LightingColorFilter(tintColor, tintColor));
-//        canvas.drawBitmap(inBitmap, 0, 0, paint);
-//        return outBitmap;
-
-//        Bitmap resultBitmap = Bitmap.createBitmap(inBitmap, 0, 0,
-//                inBitmap.getWidth() - 1, inBitmap.getHeight() - 1);
-//        Paint p = new Paint();
-//        p.setAntiAlias(true);
-//        p.setDither(true);// 图像过滤
-//        ColorFilter filter = new LightingColorFilter(tintColor, 1);
-//        p.setColorFilter(filter);
-//        Canvas canvas = new Canvas(resultBitmap);
-//        canvas.drawBitmap(resultBitmap, 0, 0, p);
-//        return resultBitmap;
-
-        // start with a Bitmap bmp
-//        Bitmap newBmp = inBitmap.copy(Bitmap.Config.ARGB_8888, true);
-//        Canvas c = new Canvas(newBmp);
-//
-//        // get the int for the colour which needs to be removed
-//        Paint paint = new Paint();// 去锯齿
-//        paint.setAntiAlias(true);// 防抖动
-//        paint.setDither(true);// 图像过滤
-//        paint.setFilterBitmap(true);
-//        paint.setARGB(255, 0, 0, 0); // ARGB for the color to replace,black replace gray
-//        paint.setXfermode(new AvoidXfermode(0x616161, 50, AvoidXfermode.Mode.TARGET));
-//        c.drawPaint(paint);
-//        return newBmp;
-    }
-
-    public static Bitmap replaceBitmapColor(Bitmap oldBitmap, int oldColor, int newColor) {
-        Bitmap mBitmap = oldBitmap.copy(Bitmap.Config.ARGB_8888, true);
-        //循环获得bitmap所有像素点
-        int mBitmapWidth = mBitmap.getWidth();
-        int mBitmapHeight = mBitmap.getHeight();
-        int mArrayColorLengh = mBitmapWidth * mBitmapHeight;
-        int[] mArrayColor = new int[mArrayColorLengh];
-        int count = 0;
-        for (int i = 0; i < mBitmapHeight; i++) {
-            for (int j = 0; j < mBitmapWidth; j++) {
-                //获得Bitmap 图片中每一个点的color颜色值
-                //将需要填充的颜色值如果不是
-                //在这说明一下 如果color 是全透明 或者全黑 返回值为 0
-                //getPixel()不带透明通道 getPixel32()才带透明部分 所以全透明是0x00000000
-                //而不透明黑色是0xFF000000 如果不计算透明部分就都是0了
-                int color = mBitmap.getPixel(j, i);
-                //将颜色值存在一个数组中 方便后面修改
-//                if (color == oldColor) {
-                if (Color.argb(0x00, 0x00, 0x00, 0x00) != color) {
-                    mBitmap.setPixel(j, i, newColor);  //将白色替换成透明色
+                        }
+                    }
+                } else {
+                    canvas.drawTextOnPath(bean.descText, mPath,
+                            getHOffset(bean.descText, outerCircleDescRadius, bean.angle, bean.spaceAngle, i), 0,
+                            mPaint);
                 }
-//                }
-
             }
         }
-        return mBitmap;
     }
 
     /**
@@ -388,7 +312,7 @@ public class CircleView extends View {
     }
 
     /**
-     * 获取小图标的偏移角度，为什么-90？因为左上区是负数
+     * 获取小图标的偏移角度
      *
      * @param segmentAngle 颜色环每段的角度
      * @param spaceAngle   颜色环每段的间距角度
@@ -396,6 +320,68 @@ public class CircleView extends View {
      */
     private float getBitmapOffsetAngle(float segmentAngle, float spaceAngle, int index) {
         return index * (segmentAngle + spaceAngle) + segmentAngle / 2;
+    }
+
+    /**
+     * 获取文案的宽度
+     */
+    private int getTextHeight(String text) {
+        Rect rect = new Rect();
+        mPaint.getTextBounds(text, 0, text.length(), rect);
+        return rect.height();
+    }
+
+    /**
+     * 获取文案的宽度
+     */
+    private int getTextWidth(String text) {
+        Rect rect = new Rect();
+        mPaint.getTextBounds(text, 0, text.length(), rect);
+        return rect.width();
+    }
+
+    /**
+     * 获取文案被截断后间隔弧长度
+     *
+     * @param text         被截断的text
+     * @param splitString  截取的符号
+     * @param segmentAngle 每段颜色弧长
+     * @param padding      左右留距
+     */
+    private float getSplitTextAngle(String text, float radius, String splitString, float segmentAngle, float padding) {
+        float width = getTextWidth(text.replaceAll(splitString, ""));
+        return (segmentAngle - (width + padding * 2) / getPerimeter(radius) * 360) / 2;
+    }
+
+    /**
+     * 计算出每段环文案对应的偏移角度
+     *
+     * @param segmentAngle  颜色环每段的角度
+     * @param spaceAngle    颜色环每段的间距角度
+     * @param intervalAngle 颜色环内文案之间的角度
+     * @param index         第几个颜色环
+     * @param splitIndex    颜色环内的第几个文案
+     * @param padding       颜色环文案左右的padding
+     */
+    private float getTextAngle(float radius, float segmentAngle, float spaceAngle, float intervalAngle,
+            int index, int splitIndex, float padding) {
+        float offsetAnage = index * (segmentAngle + spaceAngle) + padding / getPerimeter(radius) * 360
+                + splitIndex * intervalAngle;
+        return offsetAnage;
+    }
+
+    /**
+     * 获取画圆环文字时的纵向偏移量
+     *
+     * @param radius            文案环的半径
+     * @param textPositionAngle 文案位置的弧度
+     */
+    private float getHOffset4Split(float radius, float textPositionAngle) {
+        System.out.println("111111 offsetAnage = " + textPositionAngle);
+        //计算出每段颜色环的偏移
+        float offset = textPositionAngle / 360 * getPerimeter(radius);
+        float hOffset = getPerimeter(radius) / 2 + offset;
+        return hOffset;
     }
 
     /**
@@ -409,13 +395,11 @@ public class CircleView extends View {
      */
     private float getHOffset(String text, float radius, float segmentAngle, float spaceAngle, int index) {
         float hOffset = 0;
-        Rect rect = new Rect();
-        mPaint.getTextBounds(text, 0, text.length(), rect);
-        int width = rect.width();
+        float width = getTextWidth(text);
         //计算出这个文案占整个圆环的角度
         float textAngle = width / getPerimeter(radius) * 360;
         //计算出每段环文案对应的偏移角度；最后这个0.5主要是为了精度的问题，没有实际意义
-        float offsetAnage = (segmentAngle - textAngle) / 2 + index * (segmentAngle + spaceAngle) + 0.5f;
+        float offsetAnage = (segmentAngle - textAngle) / 2 + index * (segmentAngle + spaceAngle);
         //计算出每段颜色环的偏移
         float offset = offsetAnage / 360 * getPerimeter(radius);
         hOffset = getPerimeter(radius) / 2 + offset;
@@ -438,5 +422,10 @@ public class CircleView extends View {
         Rect rect = new Rect();
         paint.getTextBounds(text, 0, text.length(), rect);
         return new float[]{Float.valueOf(rect.width()), Float.valueOf(rect.height())};
+    }
+
+    public int dp2px(Context context, float dipValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dipValue * scale + 0.5f);
     }
 }
