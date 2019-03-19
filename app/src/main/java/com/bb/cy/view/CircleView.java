@@ -239,7 +239,7 @@ public class CircleView extends View {
                             float offsetAngle = textAngle
                                     + getTextWidth(textArray[j]) / getPerimeter(outerCircleDescRadius) * 360 / 2;
                             float[] offset = getBitmapOffset(
-                                    mCircleBean.innerCircleRadius + (float) mCircleBean.innerCircleWidth / 2,
+                                    mCircleBean.innerCircleRadius + (float) mCircleBean.innerCircleWidth,
                                     offsetAngle);
                             float dripRadius = dp2px(getContext(), 7);
                             //设置画笔颜色和样式

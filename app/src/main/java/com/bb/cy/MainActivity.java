@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
         circleBean.creditLevel = 1;
 
-        circleBean.levelText = "E-";
+        circleBean.levelText = "B";
         circleBean.levelTextColor = Color.rgb(0x33, 0x33, 0x33);
         circleBean.levelTextSize = sp2px(this, 49);
 
